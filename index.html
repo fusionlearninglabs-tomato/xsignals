@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>X SIGNALS</title>
+	<style>
+	body {
+    margin: 0;
+    overflow: hidden; /* This hides scrollbars and prevents scrolling entirely */
+    background-color: #000; /* Matches your canvas vibe */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+	</style>
+</head>
+	<body>
+	
+	
+	<canvas id="gameCanvas" width="500" height="500" style="border: 2px solid #000; background:#222;"></canvas>
+
+	<script src="/socket.io/socket.io.js"></script>
+	<script>
+	const socket=io();''
+	const canvas=document.getElementById('gameCanvas');
+	
+	const ctx = canvas.getContext('2d');
+	
+	let allPlayers={}
+	socket.on('updatePlayers', (serverPlayers) =>
+	{
+	allPlayers=serverPlayers;
+	
+	});
+	
+	//Controls 
+	window.addEventListener('keydown', (e) =>{
+	//Chat
+	if (e.key === ' '){
+	e.preventDefault();
+	const msg = prompt('Say: ');
+	console.log (msg)
+	if (msg){
+	socket.emit('chat message',msg);
+	}
+	}
+	
+	//Movement
+	const speed=5;
+	if (e.key== 'ArrowUp') socket.emit('move',{x:0,y:-speed});
+	if (e.key== 'ArrowDown') socket.emit('move',{x:0,y:speed});
+	if (e.key== 'ArrowLeft') socket.emit('move',{x:-speed,y:0});
+	if (e.key== 'ArrowRight') socket.emit('move',{x:speed,y:0});
+	});
+	function draw(){
+	ctx.clearRect(0,0,canvas.width,canvas.height);
+	
+	for (let id in allPlayers){
+	const p=allPlayers[id];
+		//drawplayer
+	ctx.fillStyle=p.color;
+	ctx.fillRect(p.x,p.y,20,20)
+	
+	//drawChat
+	if (p.message){
+	ctx.fillStyle= "white";
+	ctx.font = "14px monospace";
+	ctx.textAlign="center";
+	console.log(p.id+":"+p.message);
+	//chatbg
+	const textWidth = ctx.measureText(p.message.width);
+	ctx.fillStyle="rgba(0,0,0,0.6)"
+	ctx.fillRect(p.x + 10 - (textWidth/2) -5,p.y - 30, textWidth + 10,20);
+	ctx.fillStyle="white";
+	ctx.fillText(p.message,p.x+10,p.y - 15);
+	
+	}
+	}
+	requestAnimationFrame(draw);
+	}
+	draw();
+	</script>
+	
+	
+	
+
+	</html>
+	
