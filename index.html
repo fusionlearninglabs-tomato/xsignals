@@ -13,12 +13,40 @@
     align-items: center;
     height: 100vh;
 }
+#game-container{
+display:flex;
+gap:20px;
+align-items:flex-start;
+}
+#scoreboard{
+width:200px;
+height:500px;
+border: 2px sold #fff;
+padding:15px;
+color:white;
+background: #111;
+overflow-y:auto;
+}
+.score-entry{
+margin-bottom:10px;
+padding:5px;
+border-bottom:1px solid #333;
+display:flex;
+justify-content:space-between;
+}
+
 	</style>
 </head>
 	<body>
+<div id="game-container">
 	
 	<div id="canvasDiv">
 	<canvas id="gameCanvas" width="500" height="500" style="border: 2px solid #000; background:#222;"></canvas>
+</div>
+<div id="scoreboard">
+<h3 style="margin-top: 0; border-bottom: 2px; solid #fff;font-family:monospace;">*SCORES*</h3>
+<div id="player-list"></div>
+</div>
 </div>
 <br>
 <div id="textDiv" style="border:2px solid #fff;padding:16px;font-family:monospace;color:white;">
@@ -42,10 +70,38 @@ Your char sends constant signals to the goal. every signal you collide with you 
 	
 	let allPlayers={}
 	let allSignals={};
+	//scoreboard
+	const playerListDiv=document.getElementById('player-list');
+	function updateScoreboard(){
+	const sorted = Object.values(allPlayers).sort((a,b) => b.score -a.score);
+	while (playerListDiv.firstChild){
+	playerListDiv.removeChild(playerListDiv.firstChild);
+	}
+	const fragment = document.createDocumentFragment();
+	
+	sorted.forEach ((p,index)=>{
+	const entry = document.createElement ('div');
+	entry.className='score-entry';
+	entry.style.color = p.color;
+	
+	
+	const nameSpan = document.createElement('span')
+	nameSpan.textContent=`${index +1}. player`;
+	const scoreSpan=document.createElement('span');
+	scoreSpan.textContent=p.score;
+	
+	entry.appendChild(nameSpan);
+	entry.appendChild(scoreSpan);
+	fragment.appendChild(entry);
+	});
+	
+	playerListDiv.appendChild(fragment);
+	}
+	
 	socket.on('updatePlayers', (serverPlayers) =>
 	{
 	allPlayers=serverPlayers;
-	
+	updateScoreboard()
 	});
 	socket.on('updateSignals',(serverSignals) => {
 	allSignals=serverSignals;

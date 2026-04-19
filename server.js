@@ -25,13 +25,14 @@ players[socket.id]={
 x:Math.floor(Math.random()*400),
 y:Math.floor(Math.random()*400),
 color:pColor,
+	score:0,
 goal:{
 	x:Math.floor(Math.random()*400),
 	y:Math.floor(Math.random()*400),
 	size:10,
+
 	color:pColor,
 	borderColor:'#444'
-
 }
 };
 
@@ -102,24 +103,39 @@ for(const id in signals){
 		if (dist > 5){
 			sig.x += (dx / dist)  * sig.speed;
 			sig.y += (dy / dist) * sig.speed;
-		} else {
-			console.log (`${sig.targetId}+scored!`)
+			stateChanged=true
 			
-			delete signals[id];
-			
-		}
-		stateChanged=true;
 		
-	}
+	
 for (const pId in players){
 	const p = players[pId];
+	if (sig.targetId!==pId){
 	const distToPlayer = Math.sqrt(Math.pow(p.x - sig.x,2) + Math.pow(p.y - sig.y,2));
 	if (distToPlayer < 20 && sig.targetId !== pId) {
 	sig.color=p.color;
 	sig.targetId=pId;
 	stateChanged=true;
 	}
+	}
 }
+
+
+}
+ else {
+	 if(players[sig.targetId]){
+		 
+			players[sig.targetId].score+=1;
+ 			console.log (`Player${sig.targetId} now has ${players[sig.targetId].score}`);			
+	 }		
+		delete signals[id];
+			
+		
+		stateChanged=true;
+}
+}else{
+	delete signals[id];
+	stateChanged=true;
+} 
 }
 if (stateChanged){
 	io.emit('updateSignals',signals);
