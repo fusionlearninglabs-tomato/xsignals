@@ -5,6 +5,7 @@
 	<style>
 	body {
     margin: 0;
+	flex-direction:column;
     overflow: hidden; /* This hides scrollbars and prevents scrolling entirely */
     background-color: #000; /* Matches your canvas vibe */
     display: flex;
@@ -16,9 +17,12 @@
 </head>
 	<body>
 	
-	
+	<div id="canvasDiv">
 	<canvas id="gameCanvas" width="500" height="500" style="border: 2px solid #000; background:#222;"></canvas>
-
+</div>
+<br>
+<div id="textDiv" style="border:2px solid #fff;padding:16px;font-family:monospace;color:white;">Presss spacebar to enter message. Use arrow keys to move.</div>
+//beginscript
 	<script src="/socket.io/socket.io.js"></script>
 	<script>
 	const socket=io();''
