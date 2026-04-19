@@ -13,12 +13,14 @@ const signals={};
 let sigCount=0;
 
 //host webclient at->
+app.use(express.static(__dirname + "/public"));
+
 app.get('/',(req,res)=>{
-	res.sendFile(__dirname+'/index.html')
+	res.sendFile(__dirname + "/public/index.html");
 });
 
 io.on('connection',(socket)=>{
-console.log('We got a live one! @: ',socket.id);
+//console.log('We got a live one! @: ',socket.id);
 //create player
 const pColor=`hsl(${Math.random()*360},70%,50%)`;
 players[socket.id]={
@@ -49,7 +51,7 @@ socket.on('move',(movementData)=>{
 	}
 });
 socket.on('chat message',(msg)=>{
-	console.log(msg);
+	//console.log(msg);
 	if (players[socket.id]){
 		players[socket.id].message=msg;
 		io.emit('updatePlayers',players);
@@ -63,7 +65,7 @@ setTimeout(() =>{
 	}
 });
 socket.on('disconnect',()=>{
-console.log('someone bounced yo.');
+//console.log('someone bounced yo.');
 delete players[socket.id];
 io.emit('updatePlayers',players);
 });
@@ -125,7 +127,7 @@ for (const pId in players){
 	 if(players[sig.targetId]){
 		 
 			players[sig.targetId].score+=1;
- 			console.log (`Player${sig.targetId} now has ${players[sig.targetId].score}`);			
+ 			//console.log (`Player${sig.targetId} now has ${players[sig.targetId].score}`);			
 	 }		
 		delete signals[id];
 			
@@ -144,6 +146,6 @@ if (stateChanged){
 
 
 httpServer.listen(3000,() =>{
-console.log('Servers up at localhost 3k');
+//console.log('Servers up at localhost 3k');
 
 });

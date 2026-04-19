@@ -62,7 +62,33 @@ Your char sends constant signals to the goal. every signal you collide with you 
 </div>
 //beginscript
 	<script src="/socket.io/socket.io.js"></script>
+	
 	<script>
+	//audio
+	let audioUnlocked=false;
+	function unlockAudio(){
+	if (!audioUnlocked){
+	audioUnlocked=true;
+	console.log ("audio unlocked");
+	m_bg.play().catch(()=>{});
+	}
+	}
+	const s_spawn=new Audio("sounds/spawn.wav");
+	console.log ('audio loaded');
+	const s_point=new Audio("sounds/point.wav");
+	const m_bg=new Audio ("sounds/mus.mp3");
+	s_spawn.volum=0.2;
+	s_point.volume=0.2;
+	
+	m_bg.loop = true;
+	m_bg.volume = 0.6;
+	m_bg.play().catch(()=>{});
+	
+	
+	
+	let prevSignals={};
+	let prevPlayers={};
+	//init
 	const socket=io();''
 	const canvas=document.getElementById('gameCanvas');
 	
@@ -105,8 +131,28 @@ Your char sends constant signals to the goal. every signal you collide with you 
 	});
 	socket.on('updateSignals',(serverSignals) => {
 	allSignals=serverSignals;
+	for (let id in serverSignals){
+	
+	if(!prevSignals[id]){
+	
+	s_spawn.currentTime=0;
+	s_spawn.play().catch(()=>{});
+	}
+	}
+	
+	for (let id in prevSignals){
+	if (!(id in serverSignals)) {
+	s_point.currentTime=0;
+	s_point.play().catch(()	=>{});
+	}
+	}
+prevSignals={...serverSignals};
 	});
 	//Controls 
+	window.addEventListener("click",unlockAudio,{once:true});
+	window.addEventListener("keydown",unlockAudio,{once:true});
+	
+	
 	window.addEventListener('keydown', (e) =>{
 	//Chat
 	if (e.key === ' '){
