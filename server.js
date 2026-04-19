@@ -9,6 +9,8 @@ const io = new Server(httpServer);
 
 //game setup
 const players={};
+const signals={};
+let sigCount=0;
 
 //host webclient at->
 app.get('/',(req,res)=>{
@@ -18,10 +20,19 @@ app.get('/',(req,res)=>{
 io.on('connection',(socket)=>{
 console.log('We got a live one! @: ',socket.id);
 //create player
+const pColor=`hsl(${Math.random()*360},70%,50%)`;
 players[socket.id]={
 x:Math.floor(Math.random()*400),
 y:Math.floor(Math.random()*400),
-color:`hsl(${Math.random()*360},70%,50%)`
+color:pColor,
+goal:{
+	x:Math.floor(Math.random()*400),
+	y:Math.floor(Math.random()*400),
+	size:10,
+	color:pColor,
+	borderColor:'#444'
+
+}
 };
 
 //Send Player list
@@ -56,6 +67,65 @@ delete players[socket.id];
 io.emit('updatePlayers',players);
 });
 });
+
+//spawn logic:
+setInterval (()=>{
+const signalId = `sig_${sigCount++}`;
+const playerIds=Object.keys(players);
+if (playerIds.length === 0) return;
+
+const randomPlayerId=playerIds[Math.floor(Math.random()*playerIds.length)];
+const creator = players[randomPlayerId];
+
+signals[signalId]={
+	id:signalId,
+	x:creator.x,
+	y:creator.y,
+	color:creator.color,
+	targetId:randomPlayerId,
+	speed:2 
+};
+io.emit('updateSignals',signals);
+},3000);
+
+//update logic:
+setInterval(() =>{
+let stateChanged=false;
+for(const id in signals){
+	const sig = signals[id];
+	const targetPlayer = players[sig.targetId];
+	
+	if (targetPlayer) {
+		const dx = targetPlayer.goal.x - sig.x;
+		const dy = targetPlayer.goal.y - sig.y;
+		const dist = Math.sqrt(dx * dx + dy * dy);
+		if (dist > 5){
+			sig.x += (dx / dist)  * sig.speed;
+			sig.y += (dy / dist) * sig.speed;
+		} else {
+			console.log (`${sig.targetId}+scored!`)
+			
+			delete signals[id];
+			
+		}
+		stateChanged=true;
+		
+	}
+for (const pId in players){
+	const p = players[pId];
+	const distToPlayer = Math.sqrt(Math.pow(p.x - sig.x,2) + Math.pow(p.y - sig.y,2));
+	if (distToPlayer < 20 && sig.targetId !== pId) {
+	sig.color=p.color;
+	sig.targetId=pId;
+	stateChanged=true;
+	}
+}
+}
+if (stateChanged){
+	io.emit('updateSignals',signals);
+}
+},1000 / 60);
+
 
 httpServer.listen(3000,() =>{
 console.log('Servers up at localhost 3k');

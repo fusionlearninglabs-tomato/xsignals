@@ -21,7 +21,17 @@
 	<canvas id="gameCanvas" width="500" height="500" style="border: 2px solid #000; background:#222;"></canvas>
 </div>
 <br>
-<div id="textDiv" style="border:2px solid #fff;padding:16px;font-family:monospace;color:white;">Presss spacebar to enter message. Use arrow keys to move.</div>
+<div id="textDiv" style="border:2px solid #fff;padding:16px;font-family:monospace;color:white;">
+*CONTROLS*
+<br>
+Presss spacebar to enter message.
+<br>
+Use arrow keys to move.
+<br>
+*RULES*
+<br> 	
+Your char sends constant signals to the goal. every signal you collide with you , "intercept" changing the color toward your goal.
+</div>
 //beginscript
 	<script src="/socket.io/socket.io.js"></script>
 	<script>
@@ -31,12 +41,15 @@
 	const ctx = canvas.getContext('2d');
 	
 	let allPlayers={}
+	let allSignals={};
 	socket.on('updatePlayers', (serverPlayers) =>
 	{
 	allPlayers=serverPlayers;
 	
 	});
-	
+	socket.on('updateSignals',(serverSignals) => {
+	allSignals=serverSignals;
+	});
 	//Controls 
 	window.addEventListener('keydown', (e) =>{
 	//Chat
@@ -63,8 +76,11 @@
 	const p=allPlayers[id];
 		//drawplayer
 	ctx.fillStyle=p.color;
-	ctx.fillRect(p.x,p.y,20,20)
-	
+	ctx.fillRect(p.x,p.y,20,20);
+	ctx.fillStyle=p.color;
+	ctx.fillRect(p.goal.x,p.goal.y,p.goal.size,p.goal.size); 
+	ctx.fillStyle="#000"
+	ctx.strokeRect(p.goal.x,p.goal.y,p.goal.size,p.goal.size); 
 	//drawChat
 	if (p.message){
 	ctx.fillStyle= "white";
@@ -80,6 +96,21 @@
 	
 	}
 	}
+	
+	//draw SIGNALS
+	for(let id in allSignals){
+	const sig = allSignals[id];
+	ctx.fillStyle = sig.color;
+	
+	ctx.beginPath();
+	ctx.arc(sig.x,sig.y, 6, 0 , Math.PI *2);
+	ctx.fill();
+	ctx.fillStyle= "white";
+	ctx.beginPath();
+	ctx.arc(sig.x,sig.y,2,0,Math.PI *2);
+	ctx.fill ();
+	}
+	
 	requestAnimationFrame(draw);
 	}
 	draw();
